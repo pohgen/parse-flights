@@ -1,4 +1,4 @@
-# Code Documentation — United Airlines Flight Scraper
+# Code Documentation United Airlines Flight Scraper
 
 This script uses `undetected_playwright` to automate a Chromium browser, search for flights on [united.com](https://united.com), and extract key flight information.
 
