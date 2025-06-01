@@ -45,7 +45,6 @@ def input_data():
         print("Wrong date, use this format YYYY-MM-DD")
         sys.exit(1)
 
-
     return from_city, to_city, date_str
 
 
@@ -57,7 +56,7 @@ async def scrape_data(playwright: Playwright):
     browser = await playwright.chromium.launch(headless=False, slow_mo=50, args=args)
     context = await browser.new_context(
         user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        viewport={"width": 1280, "height": 800}
+        viewport={"width": 1280, "height": 800},
     )
     page = await context.new_page()
 
@@ -65,35 +64,58 @@ async def scrape_data(playwright: Playwright):
 
     await page.goto(url, timeout=100000)
 
-
     try:
-        await page.wait_for_selector(".app-components-Shopping-GridItem-styles__flightRow--QbVXL", timeout=50000)
+        await page.wait_for_selector(
+            ".app-components-Shopping-GridItem-styles__flightRow--QbVXL", timeout=50000
+        )
 
-        flights = await page.query_selector_all(".app-components-Shopping-GridItem-styles__flightRow--QbVXL")
+        flights = await page.query_selector_all(
+            ".app-components-Shopping-GridItem-styles__flightRow--QbVXL"
+        )
 
         flights_result = []
 
         for flight in flights[:3]:
-            departure_el = await flight.query_selector("div.app-components-Shopping-FlightInfoBlock-styles__departTime--cDBWt span.app-components-Shopping-FlightInfoBlock-styles__time--CaNGp")
-            departure_val = await departure_el.inner_text() if departure_el else "No departure time found"
+            departure_el = await flight.query_selector(
+                "div.app-components-Shopping-FlightInfoBlock-styles__departTime--cDBWt span.app-components-Shopping-FlightInfoBlock-styles__time--CaNGp"
+            )
+            departure_val = (
+                await departure_el.inner_text()
+                if departure_el
+                else "No departure time found"
+            )
 
-            arrival_el = await flight.query_selector("div.app-components-Shopping-FlightInfoBlock-styles__arrivalTime--AXo5U span[class*='time--CaNGp']")
-            arrival_val = await arrival_el.inner_text() if arrival_el else "No arrival time found"
+            arrival_el = await flight.query_selector(
+                "div.app-components-Shopping-FlightInfoBlock-styles__arrivalTime--AXo5U span[class*='time--CaNGp']"
+            )
+            arrival_val = (
+                await arrival_el.inner_text() if arrival_el else "No arrival time found"
+            )
 
-            duration_el = await flight.query_selector("div.app-components-Shopping-FlightInfoBlock-styles__duration--P3ZXi span[aria-hidden='true']")
-            duration_val = await duration_el.inner_text() if duration_el else "No duration found"
+            duration_el = await flight.query_selector(
+                "div.app-components-Shopping-FlightInfoBlock-styles__duration--P3ZXi span[aria-hidden='true']"
+            )
+            duration_val = (
+                await duration_el.inner_text() if duration_el else "No duration found"
+            )
 
-            price_el = await flight.query_selector("div[class*='btnPriceValue'] span span")
+            price_el = await flight.query_selector(
+                "div[class*='btnPriceValue'] span span"
+            )
             price_val = await price_el.inner_text() if price_el else "No price found"
 
-            flights_result.append({
-                "flight time": duration_val,
-                "flight cost": price_val,
-                "flight departure time": departure_val,
-                "flight arrival time": arrival_val
-            })
+            flights_result.append(
+                {
+                    "flight time": duration_val,
+                    "flight cost": price_val,
+                    "flight departure time": departure_val,
+                    "flight arrival time": arrival_val,
+                }
+            )
 
-            print(f"Flight {city_from} - {city_to}: {departure_val} - {arrival_val}, duration: {duration_val}, price: {price_val}")
+            print(
+                f"Flight {city_from} - {city_to}: {departure_val} - {arrival_val}, duration: {duration_val}, price: {price_val}"
+            )
         print(flights_result)
 
         with open("results.json", "a") as f:
